@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HealthCare AI Chatbot</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #f4f7fc;
+      color: #333;
+    }
+
+    /* Header Section */
+    header {
+      text-align: center;
+      padding: 60px 20px 30px;
+      background: linear-gradient(120deg, #007bff, #00c6ff);
+      color: white;
+    }
+
+    header h1 {
+      font-size: 46px;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      font-size: 20px;
+      margin-top: 0;
+    }
+
+    /* Chatbot Icon */
+    #chatbot-icon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      background: #007bff;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 30px;
+      cursor: pointer;
+      box-shadow: 0 0 12px #00f2ff;
+      animation: pulse 2s infinite;
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+
+    #chatbot-icon:hover {
+      transform: scale(1.1);
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 10px #00f2ff; }
+      50% { box-shadow: 0 0 20px #00f2ff, 0 0 30px #00f2ff; }
+      100% { box-shadow: 0 0 10px #00f2ff; }
+    }
+
+    /* Chat Window */
+    #chat-window {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 380px;
+      max-height: 560px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      animation: slideUp 0.4s ease forwards;
+      z-index: 999;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(50%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    #chat-header {
+      background: linear-gradient(45deg, #007bff, #00f2ff);
+      color: white;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #chat-header span {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    #minimize-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    #chat-messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      background: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      margin: 8px 0;
+      padding: 10px 15px;
+      border-radius: 15px;
+      max-width: 80%;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    .user {
+      background: #007bff;
+      color: white;
+      align-self: flex-end;
+    }
+
+    .bot {
+      background: #e4e6eb;
+      color: #333;
+      align-self: flex-start;
+    }
+
+    .bot::before {
+      content: '🤖 ';
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #chat-input {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      background: #fff;
+    }
+
+    #chat-input input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      outline: none;
+    }
+
+    #chat-input button {
+      margin-left: 8px;
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    /* FAQ Buttons */
+    #faq-quick {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 10px;
+      gap: 8px;
+      background: #f1f3f5;
+      border-top: 1px solid #ccc;
+    }
+
+    .faq-btn {
+      background: #00c6ff;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 15px;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .faq-btn:hover {
+      background: #0095e0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Main Welcome Section -->
+  <header>
+    <h1>Welcome to HealthCare AI</h1>
+    <p>Your Smart Assistant for Health Inquiries and Support 💬</p>
+  </header>
+
+  <!-- Chatbot Icon -->
+  <div id="chatbot-icon" title="Chat with us">💬</div>
+
+  <!-- Chat Window -->
+  <div id="chat-window">
+    <div id="chat-header">
+      <span>HealthBot</span>
+      <button id="minimize-btn">−</button>
+    </div>
+    <div id="chat-messages"></div>
+    <div id="faq-quick">
+      <button class="faq-btn">What services do you offer?</button>
+      <button class="faq-btn">Talk to a human</button>
+      <button class="faq-btn">Book an appointment</button>
+    </div>
+    <div id="chat-input">
+      <input type="text" id="user-message" placeholder="Ask anything..." />
+      <button id="send-button">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const chatbotIcon = document.getElementById('chatbot-icon');
+    const chatWindow = document.getElementById('chat-window');
+    const chatMessages = document.getElementById('chat-messages');
+    const sendButton = document.getElementById('send-button');
+    const userInput = document.getElementById('user-message');
+    const minimizeBtn = document.getElementById('minimize-btn');
+    const faqButtons = document.querySelectorAll('.faq-btn');
+
+    chatbotIcon.addEventListener('click', () => {
+      chatWindow.style.display = 'flex';
+    });
+
+    minimizeBtn.addEventListener('click', () => {
+      chatWindow.style.display = 'none';
+    });
+
+    sendButton.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    faqButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        userInput.value = btn.textContent;
+        sendMessage();
+      });
+    });
+
+    async function sendMessage() {
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      // Add user message
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message user';
+      userMsg.textContent = message;
+      chatMessages.appendChild(userMsg);
+
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      userInput.value = '';
+
+      // Simulate bot typing delay
+      const botTyping = document.createElement('div');
+      botTyping.className = 'message bot';
+      botTyping.textContent = 'Typing...';
+      chatMessages.appendChild(botTyping);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      try {
+        const res = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+        const data = await res.json();
+
+        // Replace typing with actual response
+        botTyping.textContent = data.response || 'Sorry, something went wrong.';
+      } catch (error) {
+        botTyping.textContent = '❌ Failed to reach server.';
+      }
+    }
+  </script>
+</body>
+</html>
